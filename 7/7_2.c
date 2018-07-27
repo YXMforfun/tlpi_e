@@ -87,6 +87,7 @@ memListRemove(memNode *header, memNode *node) {
             isInList = true;
             break;
         }
+        curr = curr->next;
     }
 
     if (isInList == false) {
@@ -96,7 +97,7 @@ memListRemove(memNode *header, memNode *node) {
 
     // 移除对应的 node 供外界使用
     h = header;
-    if (node->pre != NULL) {
+    if (node->pre == NULL) {
         if (node->next) {
             h = node->next;
         } else {
@@ -114,8 +115,8 @@ memListRemove(memNode *header, memNode *node) {
 }
 
 
-int
-main(int argc, char *argv) {
+void
+memListAppendTest() {
     int num = 10;
     printf("sbrk(0) %10p\n", sbrk(0));
     void *ptr = sbrk(num * sizeof(memNode));
@@ -128,4 +129,36 @@ main(int argc, char *argv) {
     }
 
     log_mem_list(memNodeList);
+}
+
+
+void
+memListRemoveTest() {
+    int num = 10;
+    printf("sbrk(0) %10p\n", sbrk(0));
+    void *ptr = sbrk(num * sizeof(memNode));
+    printf("sbrk(n) %10p\n", ptr);
+    void *p = ptr;
+    for (int i = 0; i < num; i++) {
+        p = ptr_mem_head(p);
+        memNodeList = memListAppend(memNodeList, (memNode *)p);
+    }
+
+    // test
+    log_mem_list(memNodeList);
+    memNode *curr = memNodeList;
+    while (curr && curr->next) {
+        memNodeList = memListRemove(memNodeList, curr);
+        printf("after remove\n");
+        log_mem_list(memNodeList);
+        // curr = curr->next;
+        curr = curr->next->next;
+    }
+}
+
+
+int
+main(int argc, char *argv) {
+    // memListAppendTest();
+    memListRemoveTest();
 }
