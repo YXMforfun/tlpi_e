@@ -83,10 +83,7 @@ memListRemove(memNodeHead *header, memNode *node) {
     }
 
     // 移除对应的 node 供外界使用
-
-
-
-
+    h = header;
     if (node->pre != NULL) {
         if (node->next) {
             h = node->next;
