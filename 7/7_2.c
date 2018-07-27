@@ -4,25 +4,25 @@
 #include <stdbool.h>
 
 
-struct memNode {
+struct memNodeStruct {
     size_t memLen;
-    struct memNode *pre;
-    struct memNode *next;
-};
-typedef struct memNode memNodeHead;
+    struct memNodeStruct *pre;
+    struct memNodeStruct *next;
+} memNodeStruct;
 
+typedef struct memNodeStruct memNode;
 
-static memNodeHead *memNodeList = NULL;
+static memNode *memNodeList = NULL;
 
 
 /*
     创建新的空闲内存链表表头, 在 free 的时候触发, 替换空闲内存链表表头
     以传入的指针为起始点, 往内存地址减小的方向移动(相当于回收堆里的内存)
 */
-memNodeHead *
+void *
 ptr_mem_head(void *ptr) {
-    memNodeHead *p;
-    p = (memNodeHead *)((unsigned long)ptr - sizeof(memNodeHead));
+    void *p;
+    p = (void *)((unsigned long)ptr - sizeof(memNode));
     return p;
 }
 
@@ -39,9 +39,21 @@ ptr_mem_node(void *ptr) {
 }
 
 
-memNodeHead *
-memListAppend(memNodeHead *header, memNode *node) {
-    memNodeHead *h;
+void
+log_mem_list(memNode *header) {
+    memNode *curr = header;
+    int i = 0;
+    while(curr != NULL) {
+        printf("(index: %d) (ptr: %10p) (size: %ld)\n", i, curr, curr->memLen);
+        curr = curr->next;
+        i += 1;
+    }
+}
+
+
+memNode *
+memListAppend(memNode *header, memNode *node) {
+    memNode *h;
     node->pre = NULL;
     if (header != NULL) {
         header->pre = node;
@@ -55,13 +67,13 @@ memListAppend(memNodeHead *header, memNode *node) {
 }
 
 
-memNodeHead *
-memListRemove(memNodeHead *header, memNode *node) {
-    memNodeHead *h;
+memNode *
+memListRemove(memNode *header, memNode *node) {
+    memNode *h;
     memNode *curr;
     bool isInList;
 
-    memNodeHead *h = NULL;
+    h = NULL;
     if (header == NULL) {
         printf("memListRemove header is NULL\n");
         return h;
@@ -69,7 +81,7 @@ memListRemove(memNodeHead *header, memNode *node) {
 
     // 查看 node 是不是在链表内, 若不在, 则非法修改内存地址
     isInList = false;
-    memNode *curr = header;
+    curr = header;
     while (curr) {
         if (curr == node) {
             isInList = true;
@@ -99,4 +111,21 @@ memListRemove(memNodeHead *header, memNode *node) {
     }
 
     return h;
+}
+
+
+int
+main(int argc, char *argv) {
+    int num = 10;
+    printf("sbrk(0) %10p\n", sbrk(0));
+    void *ptr = sbrk(num * sizeof(memNode));
+    printf("sbrk(n) %10p\n", ptr);
+    void *p = ptr;
+    for (int i = 0; i < num; i++) {
+        p = ptr_mem_head(p);
+        printf("%10p  %ld\n", p, sizeof(memNode));
+        memNodeList = memListAppend(memNodeList, (memNode *)p);
+    }
+
+    log_mem_list(memNodeList);
 }
