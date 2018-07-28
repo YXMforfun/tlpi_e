@@ -145,6 +145,7 @@ memNodeMerge(memNode *header) {
         return;
     }
 
+    // 前一块空闲内存 与 后一块空闲内存 如果为相连的内存, 则合并
     while (curr && curr->next) {
         curr_v = (unsigned long)curr;
         next_v = (unsigned long)curr->next;
@@ -160,6 +161,7 @@ memNodeMerge(memNode *header) {
         curr = curr->next;
     }
 
+    // 空闲内存全部给系统回收
     curr_v = (unsigned long)curr;
     if ((curr_v + curr->memLen + node_size) == program_break && curr->memLen >= DEALLOC_SIZE) {
         memNodeList = memListRemove(memNodeList, curr);
