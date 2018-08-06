@@ -52,7 +52,7 @@ void
 log_mem_list(memNode *header) {
     memNode *curr = header;
     int i = 0;
-    while(curr != NULL) {
+    while (curr != NULL) {
         printf("(index: %d) (ptr: %10p) (size: %ld)\n", i, curr, curr->memLen);
         curr = curr->next;
         i += 1;

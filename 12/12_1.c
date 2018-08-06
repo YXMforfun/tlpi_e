@@ -105,6 +105,8 @@ uidStatusProc(void *user_data) {
         }
     }
 
+    fclose(fp);
+
     if (match_uid) {
         int proc_id = strtol(pid, NULL, 10);
         printf("Pid: Process %d %s", proc_id, name);
