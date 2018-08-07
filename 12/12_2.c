@@ -248,6 +248,44 @@ listToTree(pnode *head) {
 
 
 void
+deepSearch(char *set, pnode *node) {
+    pid_t index = node->pid;
+    if (node->parent != NULL) {
+        if (set[index] == 0) {
+            set[index] = 's';
+            deepSearch(set, node->parent);
+        } else {
+            return;
+        }
+    } else {
+        set[index] = 'r';
+    }
+}
+
+
+pnode *
+findRoot(pnode *node) {
+    int i;
+    pnode *root_list, *n;
+    // 测试代码机器上的最大pid数
+    char set[32768] = {0};  
+    pnode *curr = node;
+    while(curr != NULL) {
+        deepSearch(set, curr);
+        curr = curr->next;
+    }
+
+    for (i = 0; i < 32768; i++) {
+        if (set[i] == 'r') {
+            n = initProcTreeNode("root", i, 0);
+            root_list = appendProcTreeNode(root_list, n);
+        }
+    }
+    return root_list;
+}
+
+
+void
 logProcList(pnode *head) {
     pid_t parent_pid;
     pnode *curr = head;
@@ -265,10 +303,40 @@ logProcList(pnode *head) {
 }
 
 
+void
+recurProcTree(pnode *head, int level) {
+    pnode *curr = head;
+    if (curr != NULL) {
+        for (int i = 0; i < level; i++) {
+            printf("    ");
+        }
+        printf("pid: %d ppid: %d name: %s", curr->pid, curr->ppid, curr->name);
+        for (int i = 0; i < curr->children_size; i++) {
+            recurProcTree(curr->children[i], level + 1);
+        }
+    }
+}
+
+
+void
+logProcTree(pnode *root_list) {
+    pnode *tmp;
+    pnode *curr = root_list;
+    while (curr != NULL) {
+        tmp = findProcTreeNode(plist_head, curr->pid);
+        recurProcTree(tmp, 0);
+        curr = curr->next;
+    }
+    return;
+}
+
+
 int
 main(int argc, char *argv[]) {
     iterFileInProcDir(pidProc);
     plist_head = listToTree(plist_head);
     logProcList(plist_head);
+    pnode *h = findRoot(plist_head);
+    logProcTree(h);
     return 0;
 }
